@@ -1,50 +1,25 @@
-# React + TypeScript + Vite
+<For optimized> component fails to reliably re-render after clearing and pushing to an observable array of objects
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- Minimal Example Here: Run in stackblitz:
+  - https://stackblitz.com/cpakken/legend-list-batch-bug
+  - https://github.com/cpakken/legend-list-batch-bug
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Description:
 
-## Expanding the ESLint configuration
+The <For optimized> component exhibits inconsistent behavior when used with an observable array of objects, specifically after clearing the array using () => list$.set([]), NOTE: () => list$.set(observable([])) works
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Initial State/Pushing: Initially, both the normal <For> and <For optimized> components render correctly, and both react correctly to pushes before any clear() operation.
 
-- Configure the top-level `parserOptions` property like this:
+Clearing the Array: Using list$.set([]) to clear the observable array causes subsequent pushes to the array to not consistently trigger a re-render in the <For optimized> component. The normal <For> component continues to function correctly.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Inconsistent Re-rendering: After clearing the array, pushing new items sometimes causes a re-render, but often requires multiple pushes (~ 7 times) before the <For optimized> component updates. This behavior is inconsistent and unreliable.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Clearing with Observable: If the array is cleared using list$.set(observable([])) instead of list$.set([]), both <For> and <For optimized> continue to work correctly after pushes.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Direct Value Setting Works: If the observable array contains primitive values directly (e.g., [1, 2, 3]) instead of objects (e.g., [{ val: 1 }, { val: 2 }, { val: 3 }]), the issue does not occur.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+
+### Expected Behavior:
+
+Both <For> and <For optimized> should consistently re-render correctly after clearing the array and pushing new items, regardless of whether the array contains primitive values or objects.
